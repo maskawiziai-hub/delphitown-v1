@@ -213,7 +213,7 @@ export class CharacterColorMapper {
    * (Alternative to canvas remapping; less precise but GPU-accelerated)
    * Not recommended for accurate palette matching
    */
-  static generateCSSFilter(preset: ColorRemapPreset): string {
+  static generateCSSFilter(): string {
     // Rough approximation using hue rotation, saturation, brightness
     // This is a fallback; canvas-based remapping is more accurate
     return `hue-rotate(0deg) saturate(1.0) brightness(1.0)`;

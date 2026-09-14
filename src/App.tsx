@@ -4,8 +4,8 @@
  * Root component that manages game state, UI layout, and game loop
  */
 
-import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { GameState, GameSettings, Citizen, GameDimensions } from './types/game';
+import React, { useState, useCallback, useEffect } from 'react';
+import { GameState, GameSettings, GameDimensions } from './types/game';
 import CharacterAnimationTest from './components/CharacterAnimationTest';
 import WorkerPanel from './components/WorkerPanel';
 import Settings from './components/Settings';
