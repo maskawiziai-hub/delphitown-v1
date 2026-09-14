@@ -13,7 +13,7 @@
  */
 
 import React from 'react';
-import { Tile, Building, Citizen, GameDimensions } from '../types/game';
+import { Tile, Building, Citizen, GameDimensions, Coordinate } from '../types/game';
 import '../styles/TownGrid.css';
 
 export interface TownGridProps {
@@ -55,7 +55,7 @@ const TownGrid: React.FC<TownGridProps> = ({
           <p>🏗️ TownGrid Coming in v1.1</p>
           <p className="subtext">Grid: {dimensions.width}×{dimensions.height}</p>
           <p className="subtext">Tile Size: {dimensions.tileSize}px</p>
-          <p className="subtext">Buildings: {buildings.size} | Citizens: {citizens.size}</p>
+<p className="subtext">Placeholder</p>
         </div>
       </div>
     </div>
