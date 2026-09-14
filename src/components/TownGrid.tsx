@@ -41,13 +41,6 @@ export interface TownGridProps {
  */
 const TownGrid: React.FC<TownGridProps> = ({
   dimensions,
-  _tiles,
-  _buildings,
-  _citizens,
-  _selectedId,
-  _onTileClick,
-  _onBuildingClick,
-  _onCitizenClick,
 }) => {
   return (
     <div className="town-grid">
