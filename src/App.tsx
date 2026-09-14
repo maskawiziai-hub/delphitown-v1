@@ -265,7 +265,7 @@ const App: React.FC = () => {
         <aside className="sidebar sidebar-left">
           <WorkerPanel
             citizens={getMockCitizens()}
-            selectedCitizenId={selectedCitizenId}
+            selectedCitizenId={selectedCitizenId || undefined}
             onSelectCitizen={handleSelectCitizen}
             detailedView={true}
           />
