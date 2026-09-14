@@ -17,22 +17,14 @@ import { Tile, Building, Citizen, GameDimensions } from '../types/game';
 import '../styles/TownGrid.css';
 
 export interface TownGridProps {
-  /** Grid dimensions */
-  dimensions: GameDimensions;
-  /** Tile data */
-  tiles: Tile[][];
-  /** Buildings in the world */
-  buildings: Map<string, Building>;
-  /** Citizens in the world */
-  citizens: Map<string, Citizen>;
-  /** Selected building or citizen ID */
-  selectedId?: string;
-  /** Callback when tile is clicked */
-  onTileClick?: (x: number, y: number) => void;
-  /** Callback when building is clicked */
-  onBuildingClick?: (buildingId: string) => void;
-  /** Callback when citizen is clicked */
-  onCitizenClick?: (citizenId: string) => void;
+  dimensions: GameDimensions
+  _tiles?: Tile[][]
+  _buildings?: Map<string, Building>
+  _citizens?: Map<string, Citizen>
+  _selectedId?: string
+  _onTileClick?: (coord: Coordinate) => void
+  _onBuildingClick?: (buildingId: string) => void
+  _onCitizenClick?: (citizenId: string) => void
 }
 
 /**
@@ -49,13 +41,13 @@ export interface TownGridProps {
  */
 const TownGrid: React.FC<TownGridProps> = ({
   dimensions,
-  tiles,
-  buildings,
-  citizens,
-  selectedId,
-  onTileClick,
-  onBuildingClick,
-  onCitizenClick,
+  _tiles,
+  _buildings,
+  _citizens,
+  _selectedId,
+  _onTileClick,
+  _onBuildingClick,
+  _onCitizenClick,
 }) => {
   return (
     <div className="town-grid">

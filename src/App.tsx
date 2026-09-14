@@ -72,7 +72,6 @@ const App: React.FC = () => {
 
   const [selectedCitizenId, setSelectedCitizenId] = useState<string | null>(null);
   const [gameMode, setGameMode] = useState<'main' | 'test'>('main');
-  const gameLoopRef = useRef<number | null>(null);
 
   // Handle animation speed change
   const handleAnimationSpeedChange = useCallback((speed: number) => {
@@ -128,7 +127,7 @@ const App: React.FC = () => {
   }, []);
 
   // Get citizens for worker panel (mock data for now)
-  const getMockCitizens = useCallback((): Array<Omit<Citizen, 'onClick'>> => {
+ const getMockCitizens = useCallback((): any[] => {
     return [
       {
         id: 'citizen-1',

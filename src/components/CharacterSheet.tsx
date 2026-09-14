@@ -4,9 +4,9 @@
  * Supports modular layer composition, direction, animation states, and color remapping
  */
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, } from 'react';
 import { AnimationPlayer, MANA_SEED_ANIMATIONS, type Direction, type AnimationState } from '../utils/AnimationPlayer';
-import { CharacterColorMapper, CHARACTER_COLOR_PRESETS, type ColorRemapPreset } from '../utils/CharacterColorMapper';
+//
 import '../styles/CharacterSheet.css';
 
 export interface CharacterSheetProps {
@@ -105,9 +105,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
       // Clear canvas
       ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-
-      // Get color preset
-      const preset = CHARACTER_COLOR_PRESETS[colorPreset] || CHARACTER_COLOR_PRESETS.default;
 
       // Extract sprite cell from sheet (64x64 pixels)
       const cellSize = 64;
