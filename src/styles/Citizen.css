@@ -1,0 +1,205 @@
+/**
+ * Citizen.css
+ * Styling for individual citizen/worker display components
+ * Shows sprite, role, current task, and availability status
+ */
+
+.citizen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(22, 33, 62, 0.6) 100%);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  min-width: 90px;
+}
+
+.citizen:hover {
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.8) 0%, rgba(22, 33, 62, 0.8) 100%);
+  border-color: #ffd700;
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
+  transform: translateY(-2px);
+}
+
+.citizen:active {
+  transform: translateY(0);
+  box-shadow: 0 0 6px rgba(255, 215, 0, 0.3);
+}
+
+.citizen:focus {
+  outline: none;
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
+}
+
+/* Available citizen (can take new tasks) */
+.citizen.available {
+  border-color: rgba(100, 200, 100, 0.5);
+}
+
+.citizen.available:hover {
+  border-color: #64c864;
+  box-shadow: 0 0 12px rgba(100, 200, 100, 0.5);
+}
+
+/* Busy citizen (working on a task) */
+.citizen.busy {
+  opacity: 0.85;
+  border-color: rgba(255, 200, 0, 0.4);
+}
+
+.citizen.busy:hover {
+  border-color: rgba(255, 200, 0, 0.7);
+  box-shadow: 0 0 12px rgba(255, 200, 0, 0.4);
+}
+
+.citizen-sprite {
+  order: 1;
+}
+
+.citizen-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+  font-size: 0.7rem;
+  order: 2;
+}
+
+.citizen-role {
+  font-weight: 600;
+  color: #ffd700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.65rem;
+  line-height: 1.2;
+}
+
+.citizen-task {
+  color: #b8956a;
+  font-size: 0.6rem;
+  font-style: italic;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.8;
+}
+
+/* Busy indicator (gear icon) */
+.citizen-busy-indicator {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 0.8rem;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Disabled/unavailable citizen */
+.citizen.disabled {
+  opacity: 0.6;
+  filter: grayscale(40%);
+  border-color: rgba(100, 100, 100, 0.3);
+  cursor: not-allowed;
+}
+
+.citizen.disabled:hover {
+  border-color: rgba(100, 100, 100, 0.3);
+  box-shadow: none;
+  transform: none;
+}
+
+/* Small variant (in lists, grids) */
+.citizen.small {
+  min-width: 70px;
+  padding: 6px;
+  gap: 4px;
+}
+
+.citizen.small .citizen-role {
+  font-size: 0.6rem;
+}
+
+.citizen.small .citizen-task {
+  font-size: 0.55rem;
+  max-width: 60px;
+}
+
+/* Large variant (detail view) */
+.citizen.large {
+  min-width: 120px;
+  padding: 12px;
+  gap: 8px;
+}
+
+.citizen.large .citizen-role {
+  font-size: 0.75rem;
+}
+
+.citizen.large .citizen-task {
+  font-size: 0.65rem;
+  max-width: 100px;
+}
+
+/* Selected state */
+.citizen.selected {
+  border-color: #ffd700;
+  box-shadow: 0 0 16px rgba(255, 215, 0, 0.6);
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.9) 0%, rgba(22, 33, 62, 0.9) 100%);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .citizen {
+    padding: 6px;
+    gap: 4px;
+    min-width: 70px;
+  }
+
+  .citizen-role {
+    font-size: 0.6rem;
+  }
+
+  .citizen-task {
+    font-size: 0.55rem;
+  }
+
+  .citizen-busy-indicator {
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .citizen {
+    padding: 4px;
+    gap: 2px;
+    min-width: 60px;
+  }
+
+  .citizen-info {
+    gap: 1px;
+  }
+
+  .citizen-role {
+    font-size: 0.55rem;
+  }
+
+  .citizen-task {
+    font-size: 0.5rem;
+    max-width: 50px;
+  }
+}
