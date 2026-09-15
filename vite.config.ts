@@ -6,10 +6,13 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    open: true,
+    strictPort: false,
   },
   build: {
     outDir: 'dist',
     sourcemap: true,
   },
+  define: {
+    'process.env': {}
+  }
 })

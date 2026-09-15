@@ -10,6 +10,7 @@ import CharacterAnimationTest from './components/CharacterAnimationTest';
 import WorkerPanel from './components/WorkerPanel';
 import Settings from './components/Settings';
 import './styles/App.css';
+import { checkSupabaseHealth } from './services/supabaseClient';
 
 /**
  * Default game settings
@@ -72,6 +73,19 @@ const App: React.FC = () => {
 
   const [selectedCitizenId, setSelectedCitizenId] = useState<string | null>(null);
   const [gameMode, setGameMode] = useState<'main' | 'test'>('main');
+// Check Supabase connection on app startup
+useEffect(() => {
+  console.log("App mounted - checking Supabase connection...");
+  checkSupabaseHealth().then((success) => {
+    if (success) {
+      console.log("Supabase health check passed!");
+    } else {
+      console.warn("Supabase health check failed");
+    }
+  }).catch((error) => {
+    console.error("Supabase health check error:", error);
+  });
+}, []);
 
   // Handle animation speed change
   const handleAnimationSpeedChange = useCallback((speed: number) => {
