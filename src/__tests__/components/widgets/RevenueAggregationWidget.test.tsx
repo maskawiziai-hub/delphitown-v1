@@ -28,6 +28,7 @@ vi.mock('@/services/revenueService', () => ({
   getRevenueAggregationByCitizen: vi.fn(),
   getRevenueAggregationByTaskType: vi.fn(),
   getRevenueAggregationByDate: vi.fn(),
+  getPnLByStream: vi.fn(),
 }));
 
 const mockRevenueService = revenueService as any;
@@ -39,6 +40,7 @@ describe('RevenueAggregationWidget', () => {
     mockRevenueService.getRevenueAggregationByCitizen.mockResolvedValue([]);
     mockRevenueService.getRevenueAggregationByTaskType.mockResolvedValue([]);
     mockRevenueService.getRevenueAggregationByDate.mockResolvedValue([]);
+    mockRevenueService.getPnLByStream.mockResolvedValue([]);
   });
 
   describe('Initial Load & Display', () => {
@@ -214,6 +216,95 @@ describe('RevenueAggregationWidget', () => {
 
       await waitFor(() => {
         expect(screen.getByText(/no data available/i)).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Per-business P&L', () => {
+    it('should show revenue, costs, net and margin for each business stream', async () => {
+      mockRevenueService.getRevenueSummary.mockResolvedValue(
+        mockDataGenerators.revenueSummary()
+      );
+      mockRevenueService.getPnLByStream.mockResolvedValue([
+        {
+          business_stream: 'collectibles',
+          total_revenue: 800,
+          total_costs: 280,
+          net_revenue: 520,
+          profit_margin_pct: 65,
+          transaction_count: 2,
+          citizen_count: 1,
+        },
+      ]);
+
+      render(<RevenueAggregationWidget />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Total Revenue')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: /by business/i }));
+
+      await waitFor(() => {
+        expect(screen.getByText('collectibles')).toBeInTheDocument();
+      });
+      expect(screen.getByText('$800.00')).toBeInTheDocument();
+      expect(screen.getByText('-$280.00')).toBeInTheDocument();
+      expect(screen.getByText('$520.00')).toBeInTheDocument();
+      expect(screen.getByText('65.0%')).toBeInTheDocument();
+    });
+
+    it('should surface a stream that is losing money', async () => {
+      // The whole point of tracking costs per stream: gross revenue would
+      // show this venture "earning $120" while it is actually down $60.
+      mockRevenueService.getRevenueSummary.mockResolvedValue(
+        mockDataGenerators.revenueSummary()
+      );
+      mockRevenueService.getPnLByStream.mockResolvedValue([
+        {
+          business_stream: 'lofi',
+          total_revenue: 120,
+          total_costs: 180,
+          net_revenue: -60,
+          profit_margin_pct: -50,
+          transaction_count: 1,
+          citizen_count: 1,
+        },
+      ]);
+
+      render(<RevenueAggregationWidget />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Total Revenue')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: /by business/i }));
+
+      await waitFor(() => {
+        expect(screen.getByText('lofi')).toBeInTheDocument();
+      });
+
+      const net = screen.getByText('$-60.00');
+      expect(net).toBeInTheDocument();
+      expect(net.className).toContain('negative');
+    });
+
+    it('should show an empty state when no business data exists', async () => {
+      mockRevenueService.getRevenueSummary.mockResolvedValue(
+        mockDataGenerators.revenueSummary()
+      );
+      mockRevenueService.getPnLByStream.mockResolvedValue([]);
+
+      render(<RevenueAggregationWidget />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Total Revenue')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: /by business/i }));
+
+      await waitFor(() => {
+        expect(screen.getByText(/no business data available/i)).toBeInTheDocument();
       });
     });
   });

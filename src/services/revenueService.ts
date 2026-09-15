@@ -11,6 +11,7 @@ import {
   RevenueStats,
   Cost,
   RecordCostInput,
+  StreamPnL,
   TaskType,
   DelphiTownError
 } from '../types';
@@ -372,6 +373,38 @@ export async function recordCost(input: RecordCostInput): Promise<Cost> {
 
   if (error) handleSupabaseError(error, 'recordCost');
   return data as Cost;
+}
+
+/**
+ * Profit and loss per business stream - collectibles, gta6, lofi, and so on -
+ * in one query. A stream with costs but no revenue still appears, because that
+ * is precisely the case worth seeing.
+ */
+export async function getPnLByStream(
+  from?: string,
+  to?: string
+): Promise<StreamPnL[]> {
+  const { data, error } = await supabase.rpc('get_pnl_by_stream', {
+    p_from: from ?? null,
+    p_to: to ?? null,
+  });
+
+  if (error) handleSupabaseError(error, 'getPnLByStream');
+
+  const num = (v: unknown): number => {
+    const n = typeof v === 'string' ? parseFloat(v) : (v as number);
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  return ((data ?? []) as Array<Record<string, unknown>>).map(row => ({
+    business_stream: String(row.business_stream ?? 'unassigned'),
+    total_revenue: num(row.total_revenue),
+    total_costs: num(row.total_costs),
+    net_revenue: num(row.net_revenue),
+    profit_margin_pct: num(row.profit_margin_pct),
+    transaction_count: num(row.transaction_count),
+    citizen_count: num(row.citizen_count),
+  }));
 }
 
 export async function getAllCosts(limit = 100): Promise<Cost[]> {

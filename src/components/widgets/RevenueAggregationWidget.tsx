@@ -3,13 +3,13 @@
 // ============================================================================
 
 import React, { useState, useEffect } from 'react';
-import { RevenueAggregation, RevenueStats } from '../../types';
+import { RevenueAggregation, RevenueStats, StreamPnL } from '../../types';
 import * as revenueService from '../../services/revenueService';
 import { useSubscribeToRevenueChanges } from '../../services/useRealtimeSubscription';
 
 interface RevenueAggregationWidgetProps {
   citizenId?: string;
-  viewType?: 'summary' | 'by-citizen' | 'by-task-type' | 'by-date';
+  viewType?: 'summary' | 'by-business' | 'by-citizen' | 'by-task-type' | 'by-date';
 }
 
 export const RevenueAggregationWidget: React.FC<RevenueAggregationWidgetProps> = ({
@@ -21,6 +21,7 @@ export const RevenueAggregationWidget: React.FC<RevenueAggregationWidgetProps> =
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeView, setActiveView] = useState(viewType);
+  const [streams, setStreams] = useState<StreamPnL[]>([]);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -31,6 +32,10 @@ export const RevenueAggregationWidget: React.FC<RevenueAggregationWidgetProps> =
       setStats(summary);
 
       let aggs: RevenueAggregation[] = [];
+
+      if (activeView === 'by-business') {
+        setStreams(await revenueService.getPnLByStream());
+      }
 
       switch (activeView) {
         case 'by-citizen':
@@ -164,6 +169,12 @@ export const RevenueAggregationWidget: React.FC<RevenueAggregationWidgetProps> =
           Summary
         </button>
         <button
+          className={activeView === 'by-business' ? 'active' : ''}
+          onClick={() => setActiveView('by-business')}
+        >
+          By Business
+        </button>
+        <button
           className={activeView === 'by-citizen' ? 'active' : ''}
           onClick={() => setActiveView('by-citizen')}
         >
@@ -183,7 +194,41 @@ export const RevenueAggregationWidget: React.FC<RevenueAggregationWidgetProps> =
         </button>
       </div>
 
-      {activeView !== 'summary' && (
+      {activeView === 'by-business' && (
+        <div className="stream-pnl">
+          {streams.length === 0 ? (
+            <p className="empty-state">No business data available</p>
+          ) : (
+            streams.map(stream => (
+              <div key={stream.business_stream} className="stream-row">
+                <div className="stream-name">
+                  <strong>{stream.business_stream}</strong>
+                  <small>
+                    {stream.citizen_count} citizen
+                    {stream.citizen_count === 1 ? '' : 's'} ·{' '}
+                    {stream.transaction_count} txn
+                    {stream.transaction_count === 1 ? '' : 's'}
+                  </small>
+                </div>
+                <div className="stream-figures">
+                  <span className="revenue">{formatCurrency(stream.total_revenue)}</span>
+                  <span className="cost">-{formatCurrency(stream.total_costs)}</span>
+                  <span
+                    className={`net ${stream.net_revenue < 0 ? 'negative' : 'positive'}`}
+                  >
+                    {formatCurrency(stream.net_revenue)}
+                  </span>
+                  <span className="margin">
+                    {stream.profit_margin_pct.toFixed(1)}%
+                  </span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {activeView !== 'summary' && activeView !== 'by-business' && (
         <>
           {aggregations.length === 0 ? (
             <p className="empty-state">No data available</p>

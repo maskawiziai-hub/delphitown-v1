@@ -353,6 +353,19 @@ export interface RevenueStats {
   active_days: number;
 }
 
+/** Per-business-stream profit and loss, from the get_pnl_by_stream() RPC.
+ *  Replaces the old `breakdown_by_source` idea: that only broke down income,
+ *  which cannot tell you which venture is actually worth your time. */
+export interface StreamPnL {
+  business_stream: string;
+  total_revenue: number;
+  total_costs: number;
+  net_revenue: number;
+  profit_margin_pct: number;
+  transaction_count: number;
+  citizen_count: number;
+}
+
 export interface WorkerStats {
   active_tasks: number;
   completed_tasks: number;
