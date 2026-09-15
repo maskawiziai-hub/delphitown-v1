@@ -62,12 +62,12 @@ export const RevenueAggregationWidget: React.FC<RevenueAggregationWidgetProps> =
   };
 
   useEffect(() => {
-    loadData();
+    void loadData();
   }, [activeView, citizenId]);
 
   // Subscribe to revenue changes
   useSubscribeToRevenueChanges(() => {
-    loadData();
+    void loadData();
   });
 
   const formatCurrency = (amount: number | null | undefined): string => {
@@ -101,7 +101,7 @@ export const RevenueAggregationWidget: React.FC<RevenueAggregationWidgetProps> =
       <div className="revenue-aggregation-widget error">
         <h3>Revenue Analytics</h3>
         <p>⚠️ {error}</p>
-        <button onClick={loadData}>Retry</button>
+        <button onClick={() => void loadData()}>Retry</button>
       </div>
     );
   }
@@ -112,7 +112,7 @@ export const RevenueAggregationWidget: React.FC<RevenueAggregationWidgetProps> =
     <div className="revenue-aggregation-widget">
       <div className="widget-header">
         <h3>Revenue Analytics</h3>
-        <button onClick={loadData} className="refresh-button">
+        <button onClick={() => void loadData()} className="refresh-button">
           ↻
         </button>
       </div>

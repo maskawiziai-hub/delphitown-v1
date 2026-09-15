@@ -366,6 +366,26 @@ export interface StreamPnL {
   citizen_count: number;
 }
 
+/** A sales channel from the revenue_sources reference table. Adding a channel
+ *  is an INSERT, not a migration - keeping "new revenue stream = config change". */
+export interface RevenueSource {
+  source_key: string;
+  display_name: string;
+  default_stream: string | null;
+  is_active: boolean;
+}
+
+/** Revenue per channel. Scope to one citizen to answer "is this worker doing
+ *  better on eBay or Shopify?" - which per-stream totals cannot tell you. */
+export interface SourcePnL {
+  source: string;
+  display_name: string;
+  total_amount: number;
+  transaction_count: number;
+  average_transaction: number;
+  share_pct: number;
+}
+
 export interface WorkerStats {
   active_tasks: number;
   completed_tasks: number;

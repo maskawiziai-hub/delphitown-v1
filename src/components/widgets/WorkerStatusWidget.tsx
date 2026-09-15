@@ -64,7 +64,7 @@ export const WorkerStatusWidget: React.FC<WorkerStatusWidgetProps> = ({ workerId
   }, [workerId]);
 
   useEffect(() => {
-    loadWorkerData();
+    void loadWorkerData();
   }, [loadWorkerData]);
 
   // Hooks must be called unconditionally at the top level of the component.
@@ -135,7 +135,7 @@ export const WorkerStatusWidget: React.FC<WorkerStatusWidgetProps> = ({ workerId
       <div className="worker-status-widget error">
         <h3>Worker Status</h3>
         <p>⚠️ {error}</p>
-        <button onClick={loadWorkerData}>Retry</button>
+        <button onClick={() => void loadWorkerData()}>Retry</button>
       </div>
     );
   }
@@ -144,7 +144,7 @@ export const WorkerStatusWidget: React.FC<WorkerStatusWidgetProps> = ({ workerId
     <div className="worker-status-widget">
       <div className="widget-header">
         <h3>Worker Status</h3>
-        <button onClick={loadWorkerData} className="refresh-button">
+        <button onClick={() => void loadWorkerData()} className="refresh-button">
           ↻
         </button>
       </div>

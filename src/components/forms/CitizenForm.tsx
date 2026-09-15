@@ -117,7 +117,7 @@ export const CitizenForm: React.FC<CitizenFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="citizen-form">
+    <form onSubmit={e => void handleSubmit(e)} className="citizen-form">
       <fieldset disabled={isLoading}>
         <div className="form-group">
           <label htmlFor="name">Citizen Name</label>

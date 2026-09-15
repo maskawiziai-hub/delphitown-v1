@@ -126,7 +126,7 @@ export async function retryTask(taskId: string): Promise<Task> {
   const { data, error } = await supabase
     .from('tasks')
     .update({
-      status: 'RETRYING' as TaskStatus,
+      status: 'RETRYING',
       retry_count: existing.retry_count + 1,
       error_message: null,
       updated_at: new Date().toISOString(),

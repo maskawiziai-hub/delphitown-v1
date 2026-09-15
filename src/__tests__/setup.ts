@@ -10,14 +10,14 @@ import { cleanup } from '@testing-library/react';
 import { afterEach } from 'vitest';
 
 // jsdom does not implement matchMedia.
-window.matchMedia =
-  window.matchMedia ||
-  function () {
+if (!window.matchMedia) {
+  window.matchMedia = function () {
     return {
       addListener: () => {},
       removeListener: () => {},
       matches: false,
     } as any;
   };
+}
 
 afterEach(() => cleanup());

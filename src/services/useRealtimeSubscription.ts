@@ -39,7 +39,7 @@ export const useRealtimeSubscription = <T extends Record<string, any>>(
     // Cleanup function
     return () => {
       if (channelRef.current) {
-        channelRef.current.unsubscribe();
+        void channelRef.current.unsubscribe();
       }
     };
   }, [channelName, table, onPayload]);
@@ -103,7 +103,7 @@ export const useSubscribeToCitizenTaskQueue = (
 
     return () => {
       if (channelRef.current) {
-        channelRef.current.unsubscribe();
+        void channelRef.current.unsubscribe();
       }
     };
   }, [citizenId, onPayload]);
@@ -158,7 +158,7 @@ export const useSubscribeToRateLimitChanges = (
 
     return () => {
       if (channelRef.current) {
-        channelRef.current.unsubscribe();
+        void channelRef.current.unsubscribe();
       }
     };
   }, [citizenId, onPayload]);

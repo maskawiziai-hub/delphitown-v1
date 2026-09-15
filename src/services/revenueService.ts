@@ -12,6 +12,8 @@ import {
   Cost,
   RecordCostInput,
   StreamPnL,
+  SourcePnL,
+  RevenueSource,
   TaskType,
   DelphiTownError
 } from '../types';
@@ -397,7 +399,8 @@ export async function getPnLByStream(
   };
 
   return ((data ?? []) as Array<Record<string, unknown>>).map(row => ({
-    business_stream: String(row.business_stream ?? 'unassigned'),
+    business_stream:
+      typeof row.business_stream === 'string' ? row.business_stream : 'unassigned',
     total_revenue: num(row.total_revenue),
     total_costs: num(row.total_costs),
     net_revenue: num(row.net_revenue),
@@ -405,6 +408,55 @@ export async function getPnLByStream(
     transaction_count: num(row.transaction_count),
     citizen_count: num(row.citizen_count),
   }));
+}
+
+/**
+ * Revenue per sales channel.
+ * @param citizenId scope to a single worker - answers "which channel is THIS
+ *                  citizen actually earning on?"
+ * @param stream    scope to one business instead
+ */
+export async function getRevenueBySource(
+  citizenId?: string,
+  stream?: string,
+  from?: string,
+  to?: string
+): Promise<SourcePnL[]> {
+  const { data, error } = await supabase.rpc('get_revenue_by_source', {
+    p_citizen_id: citizenId ?? null,
+    p_stream: stream ?? null,
+    p_from: from ?? null,
+    p_to: to ?? null,
+  });
+
+  if (error) handleSupabaseError(error, 'getRevenueBySource');
+
+  const num = (v: unknown): number => {
+    const n = typeof v === 'string' ? parseFloat(v) : (v as number);
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  return ((data ?? []) as Array<Record<string, unknown>>).map(row => ({
+    source: typeof row.source === 'string' ? row.source : 'other',
+    display_name:
+      typeof row.display_name === 'string' ? row.display_name : 'Other',
+    total_amount: num(row.total_amount),
+    transaction_count: num(row.transaction_count),
+    average_transaction: num(row.average_transaction),
+    share_pct: num(row.share_pct),
+  }));
+}
+
+/** Active sales channels, for populating a source dropdown. */
+export async function getRevenueSources(): Promise<RevenueSource[]> {
+  const { data, error } = await supabase
+    .from('revenue_sources')
+    .select('*')
+    .eq('is_active', true)
+    .order('display_name');
+
+  if (error) handleSupabaseError(error, 'getRevenueSources');
+  return (data ?? []) as RevenueSource[];
 }
 
 export async function getAllCosts(limit = 100): Promise<Cost[]> {

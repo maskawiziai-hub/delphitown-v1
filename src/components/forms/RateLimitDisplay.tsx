@@ -45,13 +45,13 @@ export const RateLimitDisplay: React.FC<RateLimitDisplayProps> = ({
 
   // Initial fetch
   useEffect(() => {
-    fetchQuota();
+    void fetchQuota();
   }, [citizenId, taskType]);
 
   // Subscribe to realtime changes
   useSubscribeToRateLimitChanges(citizenId, () => {
     // Re-fetch on realtime update
-    fetchQuota();
+    void fetchQuota();
   });
 
   const getProgressPercentage = (remaining: number, used: number): number => {
@@ -111,7 +111,7 @@ export const RateLimitDisplay: React.FC<RateLimitDisplayProps> = ({
         <strong>Rate Limit: {taskType}</strong>
         {showRefresh && (
           <button
-            onClick={fetchQuota}
+            onClick={() => void fetchQuota()}
             disabled={isLoading}
             className="refresh-button"
             title="Refresh quota status"

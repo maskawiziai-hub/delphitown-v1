@@ -88,7 +88,7 @@ export async function getWorkerHealthStatus(
   if (error) fail(error, 'getWorkerHealthStatus');
   if (!data) return null;
 
-  const row = data as { health_status: string; uptime_percentage: number | null };
+  const row = data;
   return {
     status: (row.health_status ?? 'OFFLINE').toUpperCase() as WorkerHealthStatus,
     uptime_percentage: row.uptime_percentage ?? undefined,

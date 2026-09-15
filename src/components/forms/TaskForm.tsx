@@ -65,7 +65,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
       }
     };
 
-    loadCitizens();
+    void loadCitizens();
   }, []);
 
   // Load workers when citizen changes
@@ -88,7 +88,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
       }
     };
 
-    loadWorkers();
+    void loadWorkers();
   }, [formData.citizen_id]);
 
   // Check rate limit when citizen or task type changes
@@ -226,7 +226,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="task-form">
+    <form onSubmit={e => void handleSubmit(e)} className="task-form">
       <fieldset disabled={isLoading}>
         <div className="form-group">
           <label htmlFor="citizen_id">Select Citizen</label>

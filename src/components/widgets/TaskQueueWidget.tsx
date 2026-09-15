@@ -84,7 +84,7 @@ export const TaskQueueWidget: React.FC<TaskQueueWidgetProps> = ({
   }, [tasks, statusFilter]);
 
   useEffect(() => {
-    loadTasks();
+    void loadTasks();
   }, [citizenId]);
 
   // Call hook at component level (unconditional) - hook handles undefined citizenId
@@ -138,7 +138,7 @@ export const TaskQueueWidget: React.FC<TaskQueueWidgetProps> = ({
       <div className="task-queue-widget error">
         <h3>Task Queue</h3>
         <p>⚠️ {error}</p>
-        <button onClick={loadTasks}>Retry</button>
+        <button onClick={() => void loadTasks()}>Retry</button>
       </div>
     );
   }
@@ -147,7 +147,7 @@ export const TaskQueueWidget: React.FC<TaskQueueWidgetProps> = ({
     <div className="task-queue-widget">
       <div className="widget-header">
         <h3>Task Queue</h3>
-        <button onClick={loadTasks} className="refresh-button">
+        <button onClick={() => void loadTasks()} className="refresh-button">
           ↻
         </button>
       </div>
