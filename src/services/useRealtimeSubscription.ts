@@ -172,18 +172,6 @@ export const useSubscribeToRateLimitChanges = (
   };
 };
 
-/**
- * Subscribe to worker table changes
- */
-export const useSubscribeToWorkerChanges = (
-  onPayload: (payload: any) => void
-) => {
-  return useRealtimeSubscription('workers', 'workers', onPayload);
-};
-
-/**
- * Subscribe to asset table changes
- */
 export const useSubscribeToAssetChanges = (
   onPayload: (payload: any) => void
 ) => {

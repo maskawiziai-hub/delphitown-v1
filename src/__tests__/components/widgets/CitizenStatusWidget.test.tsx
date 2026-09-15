@@ -1,16 +1,16 @@
 // ============================================================================
-// WorkerStatusWidget Integration Tests
+// CitizenStatusWidget Integration Tests
 // Tests: Widget + Hook + Service working together with realtime updates
 // ============================================================================
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
-import { WorkerStatusWidget } from '@/components/widgets/WorkerStatusWidget';
-import * as workerService from '@/services/workerService';
+import { CitizenStatusWidget } from '@/components/widgets/CitizenStatusWidget';
+import * as citizenService from '@/services/citizenService';
 import { simulateSubscriptionPayload, resetSupabaseMocks } from '@/__tests__/mocks';
 import { mockDataGenerators } from '@/__tests__/utils/testHelpers';
 
-// This mock was missing entirely, so the real useSubscribeToWorkerChanges hook
+// This mock was missing entirely, so the real useSubscribeToCitizenChanges hook
 // ran against the real Supabase client and simulateSubscriptionPayload could
 // never reach it. That is why the realtime tests failed here but not elsewhere.
 vi.mock('@/services/supabaseClient', async () => {
@@ -18,47 +18,47 @@ vi.mock('@/services/supabaseClient', async () => {
   return { supabase: mockSupabaseClient };
 });
 
-vi.mock('@/services/workerService', () => ({
-  getAllWorkers: vi.fn(),
-  getWorkerById: vi.fn(),
-  getWorkerStats: vi.fn(),
-  getWorkerHealthStatus: vi.fn(),
+vi.mock('@/services/citizenService', () => ({
+  getAllCitizens: vi.fn(),
+  getCitizenById: vi.fn(),
+  getCitizenStats: vi.fn(),
+  getCitizenHealthStatus: vi.fn(),
 }));
 
-const mockWorkerService = workerService as any;
+const mockCitizenService = citizenService as any;
 
-describe('WorkerStatusWidget - Integration Tests', () => {
+describe('CitizenStatusWidget - Integration Tests', () => {
   beforeEach(() => {
     resetSupabaseMocks();
     vi.clearAllMocks();
 
     // The widget calls these for every worker it renders. Without defaults they
     // return undefined and the component throws mid-render.
-    mockWorkerService.getWorkerStats.mockResolvedValue({
+    mockCitizenService.getCitizenStats.mockResolvedValue({
       active_tasks: 0, completed_tasks: 0, failed_tasks: 0,
       success_rate: 0, avg_task_duration: 0,
     });
-    mockWorkerService.getWorkerHealthStatus.mockResolvedValue({ status: 'HEALTHY' });
+    mockCitizenService.getCitizenHealthStatus.mockResolvedValue({ status: 'HEALTHY' });
   });
 
   describe('Initial Load & Display', () => {
     it('should render loading state while fetching workers', () => {
-      mockWorkerService.getAllWorkers.mockImplementation(() => new Promise(() => {}));
+      mockCitizenService.getAllCitizens.mockImplementation(() => new Promise(() => {}));
 
-      render(<WorkerStatusWidget />);
+      render(<CitizenStatusWidget />);
 
       expect(screen.getByText(/loading/i)).toBeInTheDocument();
     });
 
     it('should display worker list after loading', async () => {
-      const mockWorkers = [
-        mockDataGenerators.worker({ id: 'w1', name: 'Astra', status: 'IDLE' }),
-        mockDataGenerators.worker({ id: 'w2', name: 'Bron', status: 'ACTIVE' }),
+      const mockCitizens = [
+        mockDataGenerators.citizen({ id: 'w1', name: 'Astra', status: 'IDLE' }),
+        mockDataGenerators.citizen({ id: 'w2', name: 'Bron', status: 'ACTIVE' }),
       ];
 
-      mockWorkerService.getAllWorkers.mockResolvedValue(mockWorkers);
+      mockCitizenService.getAllCitizens.mockResolvedValue(mockCitizens);
 
-      render(<WorkerStatusWidget />);
+      render(<CitizenStatusWidget />);
 
       await waitFor(() => {
         expect(screen.getByText('Astra')).toBeInTheDocument();
@@ -67,9 +67,9 @@ describe('WorkerStatusWidget - Integration Tests', () => {
     });
 
     it('should display error state on load failure', async () => {
-      mockWorkerService.getAllWorkers.mockRejectedValue(new Error('Failed to load'));
+      mockCitizenService.getAllCitizens.mockRejectedValue(new Error('Failed to load'));
 
-      render(<WorkerStatusWidget />);
+      render(<CitizenStatusWidget />);
 
       await waitFor(() => {
         expect(screen.getByText(/failed to load/i)).toBeInTheDocument();
@@ -77,35 +77,35 @@ describe('WorkerStatusWidget - Integration Tests', () => {
     });
   });
 
-  describe('Realtime Worker Status Updates', () => {
+  describe('Realtime Citizen Status Updates', () => {
     beforeEach(() => {
-      const initialWorkers = [
-        mockDataGenerators.worker({ id: 'w1', name: 'Astra', status: 'IDLE' }),
+      const initialCitizens = [
+        mockDataGenerators.citizen({ id: 'w1', name: 'Astra', status: 'IDLE' }),
       ];
-      mockWorkerService.getAllWorkers.mockResolvedValue(initialWorkers);
+      mockCitizenService.getAllCitizens.mockResolvedValue(initialCitizens);
     });
 
     it('should update worker status when subscription receives change', async () => {
-      render(<WorkerStatusWidget />);
+      render(<CitizenStatusWidget />);
 
       await waitFor(() => {
         expect(screen.getByText('IDLE')).toBeInTheDocument();
       });
 
       // Simulate worker status change via subscription
-      const updatedWorker = mockDataGenerators.worker({
+      const updatedCitizen = mockDataGenerators.citizen({
         id: 'w1',
         name: 'Astra',
         status: 'ACTIVE',
       });
 
       // The widget refetches on change, so the service must reflect the new state.
-      mockWorkerService.getAllWorkers.mockResolvedValue([updatedWorker]);
+      mockCitizenService.getAllCitizens.mockResolvedValue([updatedCitizen]);
 
       simulateSubscriptionPayload({
         eventType: 'UPDATE',
-        new: updatedWorker,
-        old: mockDataGenerators.worker({ id: 'w1', status: 'IDLE' }),
+        new: updatedCitizen,
+        old: mockDataGenerators.citizen({ id: 'w1', status: 'IDLE' }),
       });
 
       await waitFor(() => {
@@ -115,13 +115,13 @@ describe('WorkerStatusWidget - Integration Tests', () => {
     });
 
     it('should add new worker when subscription receives INSERT', async () => {
-      render(<WorkerStatusWidget />);
+      render(<CitizenStatusWidget />);
 
       await waitFor(() => {
         expect(screen.getByText('Astra')).toBeInTheDocument();
       });
 
-      const newWorker = mockDataGenerators.worker({
+      const newCitizen = mockDataGenerators.citizen({
         id: 'w2',
         name: 'Bron',
         status: 'IDLE',
@@ -129,14 +129,14 @@ describe('WorkerStatusWidget - Integration Tests', () => {
 
       // Same here: the refetch is the mechanism, so the service must now
       // return both workers.
-      mockWorkerService.getAllWorkers.mockResolvedValue([
-        mockDataGenerators.worker({ id: 'w1', name: 'Astra', status: 'IDLE' }),
-        newWorker,
+      mockCitizenService.getAllCitizens.mockResolvedValue([
+        mockDataGenerators.citizen({ id: 'w1', name: 'Astra', status: 'IDLE' }),
+        newCitizen,
       ]);
 
       simulateSubscriptionPayload({
         eventType: 'INSERT',
-        new: newWorker,
+        new: newCitizen,
         old: null,
       });
 
@@ -148,15 +148,15 @@ describe('WorkerStatusWidget - Integration Tests', () => {
 
   describe('Health Metrics Display', () => {
     it('should display health status for each worker', async () => {
-      const mockWorkers = [
-        mockDataGenerators.worker({ id: 'w1', name: 'Worker1' }),
-        mockDataGenerators.worker({ id: 'w2', name: 'Worker2' }),
+      const mockCitizens = [
+        mockDataGenerators.citizen({ id: 'w1', name: 'Worker1' }),
+        mockDataGenerators.citizen({ id: 'w2', name: 'Worker2' }),
       ];
 
-      mockWorkerService.getAllWorkers.mockResolvedValue(mockWorkers);
-      mockWorkerService.getWorkerHealthStatus.mockResolvedValue({ status: 'DEGRADED' });
+      mockCitizenService.getAllCitizens.mockResolvedValue(mockCitizens);
+      mockCitizenService.getCitizenHealthStatus.mockResolvedValue({ status: 'DEGRADED' });
 
-      render(<WorkerStatusWidget />);
+      render(<CitizenStatusWidget />);
 
       await waitFor(() => {
         expect(screen.getAllByText('DEGRADED').length).toBe(2);
@@ -164,15 +164,15 @@ describe('WorkerStatusWidget - Integration Tests', () => {
     });
 
     it('should show active task count for each worker', async () => {
-      const mockWorkers = [mockDataGenerators.worker({ id: 'w1', name: 'Worker1' })];
+      const mockCitizens = [mockDataGenerators.citizen({ id: 'w1', name: 'Worker1' })];
 
-      mockWorkerService.getAllWorkers.mockResolvedValue(mockWorkers);
-      mockWorkerService.getWorkerStats.mockResolvedValue({
+      mockCitizenService.getAllCitizens.mockResolvedValue(mockCitizens);
+      mockCitizenService.getCitizenStats.mockResolvedValue({
         active_tasks: 5, completed_tasks: 10, failed_tasks: 1,
         success_rate: 90, avg_task_duration: 120,
       });
 
-      render(<WorkerStatusWidget />);
+      render(<CitizenStatusWidget />);
 
       await waitFor(() => {
         expect(screen.getByText('5')).toBeInTheDocument();
@@ -180,18 +180,18 @@ describe('WorkerStatusWidget - Integration Tests', () => {
     });
   });
 
-  describe('Worker Status States', () => {
+  describe('Citizen Status States', () => {
     it('should display different status indicators for each state', async () => {
-      const mockWorkers = [
-        mockDataGenerators.worker({ id: 'w1', status: 'IDLE' }),
-        mockDataGenerators.worker({ id: 'w2', status: 'ACTIVE' }),
-        mockDataGenerators.worker({ id: 'w3', status: 'RESTING' }),
-        mockDataGenerators.worker({ id: 'w4', status: 'OFFLINE' }),
+      const mockCitizens = [
+        mockDataGenerators.citizen({ id: 'w1', status: 'IDLE' }),
+        mockDataGenerators.citizen({ id: 'w2', status: 'ACTIVE' }),
+        mockDataGenerators.citizen({ id: 'w3', status: 'RESTING' }),
+        mockDataGenerators.citizen({ id: 'w4', status: 'OFFLINE' }),
       ];
 
-      mockWorkerService.getAllWorkers.mockResolvedValue(mockWorkers);
+      mockCitizenService.getAllCitizens.mockResolvedValue(mockCitizens);
 
-      render(<WorkerStatusWidget />);
+      render(<CitizenStatusWidget />);
 
       await waitFor(() => {
         expect(screen.getByText('IDLE')).toBeInTheDocument();

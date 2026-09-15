@@ -1,0 +1,84 @@
+/* FormField Component Styles */
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.required {
+  color: #e74c3c;
+  margin-left: 0.25rem;
+}
+
+.description {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 0;
+  margin-top: -0.25rem;
+}
+
+.inputWrapper {
+  position: relative;
+}
+
+.input {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.input:hover:not(:focus) {
+  border-color: #bbb;
+}
+
+.inputError {
+  border-color: #e74c3c;
+}
+
+.inputError:focus {
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+}
+
+.checkbox {
+  width: 1.25rem;
+  height: 1.25rem;
+  cursor: pointer;
+  accent-color: #3498db;
+}
+
+.error {
+  color: #e74c3c;
+  font-size: 0.85rem;
+  margin: 0;
+  margin-top: -0.25rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .label {
+    font-size: 0.9rem;
+  }
+
+  .input {
+    font-size: 1rem; /* Prevent zoom on iOS */
+  }
+}

@@ -65,7 +65,6 @@ export async function queueTask(input: QueueTaskInput): Promise<Task> {
     .insert([
       {
         citizen_id: input.citizen_id,
-        worker_id: input.worker_id ?? null,
         task_type: input.task_type,
         status: 'QUEUED' as TaskStatus,
         priority: input.priority ?? 5,

@@ -93,6 +93,19 @@ export interface CitizenConfig {
   rules?: string[];
   schedule?: string;
   prompt?: string;
+
+  // --- Grants (Charter rules 18/19) -------------------------------------
+  // Approval happens once, at deploy time, instead of per action. That makes
+  // the grant the deliberate moment, so it must be explicit and bounded.
+  /** What this citizen may do without asking, e.g. 'read', 'publish', 'purchase'. */
+  granted_scopes?: string[];
+  /** Hard ceiling on spend. Absent or 0 means no spending authority at all. */
+  budget_usd?: number;
+  /** Which cost types the budget may be spent on. */
+  allowed_cost_types?: CostType[];
+  /** Platforms it may touch, e.g. 'shopify', 'youtube'. */
+  allowed_platforms?: string[];
+
   [key: string]: unknown;
 }
 
@@ -113,28 +126,27 @@ export interface Citizen {
   x_position: number | null;
   y_position: number | null;
   sprite_key: string | null;
+  // Absorbed from the old `workers` table (migration 0012).
+  description: string | null;
+  version: string;
+  max_concurrent_tasks: number;
+  avg_task_duration_seconds: number | null;
+  success_rate: number;
+  capabilities: Record<string, unknown>;
+  health_check_interval_ms: number;
+  region: string;
   created_at: string;
   updated_at: string;
 }
 
-export interface Worker {
-  id: string;
-  name: string;
-  worker_type: WorkerType;
-  description: string;
-  version: string;
-  status: string;
-  max_concurrent_tasks: number;
-  avg_task_duration_seconds: number;
-  success_rate: number;
-  created_at: string;
-  updated_at: string;
-}
+/** @deprecated `workers` was merged into `citizens` (migration 0012).
+ *  A citizen IS the worker. Kept as an alias so older imports fail loudly at
+ *  the type level rather than silently reading a table that no longer exists. */
+export type Worker = Citizen;
 
 export interface Task {
   id: string;
   citizen_id: string;
-  worker_id: string | null;
   task_type: TaskType;
   status: TaskStatus;
   /** Integer 1-10, matching the DB CHECK. Use priorityLabel() to display. */
@@ -165,10 +177,42 @@ export interface Asset {
   updated_at: string;
 }
 
+/** A row of the assets_manifest table. */
+/** UI state for DynamicTaskForm. */
+export interface TaskForm {
+  citizenId: string;
+  selectedTaskType: TaskType | null;
+  formData: Record<string, unknown>;
+  errors: Record<string, string>;
+  isLoading: boolean;
+  isSuccess: boolean;
+  errorMessage: string | null;
+}
+
+export interface AssetManifest {
+  id: string;
+  asset_key: string;
+  asset_name: string;
+  asset_type: 'sprite' | 'animation' | 'audio' | 'icon' | 'emoji' | 'tileset' | 'particle';
+  category: 'citizen' | 'ui' | 'sfx' | 'music' | 'tileset' | 'particle' | 'background';
+  file_path: string;
+  file_size_bytes: number;
+  width: number | null;
+  height: number | null;
+  frame_count: number | null;
+  duration_ms: number | null;
+  tags: string[];
+  source: 'downloaded' | 'generated' | 'purchased' | 'custom';
+  version: string;
+  is_deprecated: boolean;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Revenue {
   id: string;
   citizen_id: string;
-  worker_id: string | null;
   task_id: string | null;
   task_type: TaskType;
   amount: number;
@@ -193,9 +237,9 @@ export interface RateLimit {
   updated_at: string;
 }
 
-export interface WorkerHealth {
+export interface CitizenHealth {
   id: string;
-  worker_id: string;
+  citizen_id: string;
   status: WorkerHealthStatus;
   uptime_percentage: number;
   last_check_at: string;
@@ -216,7 +260,6 @@ export interface CreateCitizenInput {
 
 export interface QueueTaskInput {
   citizen_id: string;
-  worker_id?: string | null;
   task_type: TaskType;
   /** 1-10. Omit for the default (5). */
   priority?: number;
@@ -234,7 +277,6 @@ export interface UpdateTaskStatusInput {
 
 export interface RecordRevenueInput {
   citizen_id: string;
-  worker_id?: string | null;
   task_id?: string | null;
   task_type: TaskType;
   amount: number;
@@ -386,7 +428,7 @@ export interface SourcePnL {
   share_pct: number;
 }
 
-export interface WorkerStats {
+export interface CitizenStats {
   active_tasks: number;
   completed_tasks: number;
   failed_tasks: number;

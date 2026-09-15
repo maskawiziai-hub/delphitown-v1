@@ -7,6 +7,9 @@
 import { supabase } from './supabaseClient';
 import type {
   Citizen,
+  CitizenStats,
+  TaskStatus,
+  WorkerHealthStatus,
   CitizenStatus,
   CitizenConfig,
   CitizenMetrics,
@@ -166,4 +169,80 @@ export async function getCitizenMetrics(): Promise<CitizenMetrics> {
       rows.length > 0 ? Math.round((totalRevenue / rows.length) * 100) / 100 : 0,
     total_tasks_completed: rows.reduce((sum, r) => sum + (r.tasks_completed ?? 0), 0),
   };
+}
+
+// ============================================================================
+// Stats & health
+// Absorbed from workerService when `workers` was merged into `citizens`
+// (migration 0012). A citizen IS the worker, so these belong here.
+// ============================================================================
+
+/** Run statistics for a citizen, derived from its tasks. */
+export async function getCitizenStats(citizenId: string): Promise<CitizenStats> {
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('status, actual_duration_seconds')
+    .eq('citizen_id', citizenId);
+
+  if (error) fail(error, 'getCitizenStats');
+
+  const rows = (data ?? []) as Array<{
+    status: TaskStatus;
+    actual_duration_seconds: number | null;
+  }>;
+  const count = (st: TaskStatus) => rows.filter(r => r.status === st).length;
+
+  const completed = count('COMPLETED');
+  const failed = count('FAILED');
+  const finished = completed + failed;
+  const durations = rows
+    .map(r => r.actual_duration_seconds)
+    .filter((d): d is number => typeof d === 'number');
+
+  return {
+    active_tasks: count('RUNNING') + count('QUEUED'),
+    completed_tasks: completed,
+    failed_tasks: failed,
+    success_rate: finished > 0 ? Math.round((completed / finished) * 100) : 0,
+    avg_task_duration:
+      durations.length > 0
+        ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
+        : 0,
+  };
+}
+
+/**
+ * Latest health record for a citizen.
+ * citizen_health is append-only history, so the newest row is current state.
+ */
+export async function getCitizenHealthStatus(
+  citizenId: string
+): Promise<{ status: WorkerHealthStatus; uptime_percentage?: number } | null> {
+  const { data, error } = await supabase
+    .from('citizen_health')
+    .select('health_status, uptime_percentage')
+    .eq('citizen_id', citizenId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) fail(error, 'getCitizenHealthStatus');
+  if (!data) return null;
+
+  const row = data;
+  return {
+    status: (row.health_status ?? 'OFFLINE').toUpperCase() as WorkerHealthStatus,
+    uptime_percentage: row.uptime_percentage ?? undefined,
+  };
+}
+
+/** Does this citizen's deploy-time grant cover the requested scope? (Rule 18) */
+export function hasGrant(citizen: Citizen, scope: string): boolean {
+  return citizen.config?.granted_scopes?.includes(scope) ?? false;
+}
+
+/** Remaining spend under the citizen's deploy-time budget. (Rule 11) */
+export function budgetRemaining(citizen: Citizen, spentSoFar: number): number {
+  const budget = citizen.config?.budget_usd ?? 0;
+  return Math.max(0, budget - spentSoFar);
 }

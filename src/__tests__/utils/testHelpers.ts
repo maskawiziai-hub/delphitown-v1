@@ -65,7 +65,7 @@ export const mockDataGenerators = {
     ...overrides,
   }),
 
-  worker: (overrides = {}) => ({
+  citizen: (overrides = {}) => ({
     id: 'w-' + Math.random().toString(36).substr(2, 9),
     name: 'Worker',
     // Matches the citizens.status CHECK constraint. 'WORKING' and
@@ -93,32 +93,6 @@ export const mockDataGenerators = {
     average_daily: 250.0,
     unique_citizens: 3,
     active_days: 5,
-    ...overrides,
-  }),
-
-  revenue: (overrides = {}) => ({
-    total_revenue: 1000.0,
-    total_expenses: 200.0,
-    net_revenue: 800.0,
-    period: 'month',
-    breakdown_by_source: {
-      collectibles_pricing: 600.0,
-      gta6_analysis: 300.0,
-      dropshipping: 100.0,
-    },
-    expense_breakdown: {
-      api_costs: 100.0,
-      storage: 60.0,
-      compute: 40.0,
-    },
-    ...overrides,
-  }),
-
-  citizen: (overrides = {}) => ({
-    id: 'citizen-' + Math.random().toString(36).substr(2, 9),
-    name: 'Test Citizen',
-    status: 'active',
-    location: { x: 0, y: 0 },
     ...overrides,
   }),
 

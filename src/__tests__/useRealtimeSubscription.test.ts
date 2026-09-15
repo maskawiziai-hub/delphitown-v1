@@ -17,7 +17,6 @@ import {
   useSubscribeToCitizenTaskQueue,
   useSubscribeToRevenueChanges,
   useSubscribeToRateLimitChanges,
-  useSubscribeToWorkerChanges,
   useSubscribeToAssetChanges,
 } from '../services/useRealtimeSubscription';
 
@@ -118,12 +117,6 @@ describe('useRealtimeSubscription', () => {
       );
     });
 
-    it('should use useSubscribeToWorkerChanges with correct table', () => {
-      const callback = vi.fn();
-      renderHook(() => useSubscribeToWorkerChanges(callback));
-
-      expect(mockSupabaseClient.channel).toHaveBeenCalledWith('workers:workers');
-    });
 
     it('should use useSubscribeToAssetChanges with assets_manifest table', () => {
       const callback = vi.fn();

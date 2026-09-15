@@ -3,10 +3,9 @@
 // ============================================================================
 
 import React, { useState, useEffect } from 'react';
-import { Task, TaskType, Citizen, Worker, QueueTaskInput, PRIORITY } from '../../types';
+import { Task, TaskType, Citizen, QueueTaskInput, PRIORITY } from '../../types';
 import * as taskService from '../../services/taskService';
 import * as citizenService from '../../services/citizenService';
-import * as workerService from '../../services/workerService';
 import * as rateLimitService from '../../services/rateLimitService';
 
 interface TaskFormProps {
@@ -23,14 +22,12 @@ export const TaskForm: React.FC<TaskFormProps> = ({
   // Form state
   const [formData, setFormData] = useState<Partial<QueueTaskInput>>({
     citizen_id: defaultCitizenId || '',
-    worker_id: '',
     task_type: 'hunt_collectible',
     priority: PRIORITY.MEDIUM,
   });
 
   // Data state
   const [citizens, setCitizens] = useState<Citizen[]>([]);
-  const [workers, setWorkers] = useState<Worker[]>([]);
   const [taskTypes] = useState<TaskType[]>([
     'hunt_collectible',
     'create_gta6_video',
@@ -68,27 +65,12 @@ export const TaskForm: React.FC<TaskFormProps> = ({
     void loadCitizens();
   }, []);
 
-  // Load workers when citizen changes
+  // Clear the quota readout when no citizen is selected. There is no separate
+  // worker to load any more - a citizen IS the worker (migration 0012).
   useEffect(() => {
-    const loadWorkers = async () => {
-      if (!formData.citizen_id) {
-        setWorkers([]);
-        setRemainingQuota(null);
-        return;
-      }
-
-      try {
-        const citizen = await citizenService.getCitizenById(formData.citizen_id);
-        if (citizen) {
-          const workerList = await workerService.getAllWorkers(citizen.worker_type);
-          setWorkers(workerList.filter(w => w.status !== 'OFFLINE'));
-        }
-      } catch (err) {
-        console.error('Failed to load workers:', err);
-      }
-    };
-
-    void loadWorkers();
+    if (!formData.citizen_id) {
+      setRemainingQuota(null);
+    }
   }, [formData.citizen_id]);
 
   // Check rate limit when citizen or task type changes
@@ -145,11 +127,6 @@ export const TaskForm: React.FC<TaskFormProps> = ({
       return false;
     }
 
-    if (!formData.worker_id) {
-      setError('Please select a worker');
-      return false;
-    }
-
     if (!formData.task_type) {
       setError('Please select a task type');
       return false;
@@ -189,9 +166,8 @@ export const TaskForm: React.FC<TaskFormProps> = ({
     try {
       const newTask = await taskService.queueTask({
         citizen_id: formData.citizen_id,
-        worker_id: formData.worker_id || '',
         task_type: formData.task_type as TaskType,
-        priority: (formData.priority as any) || 'NORMAL',
+        priority: formData.priority ?? PRIORITY.MEDIUM,
       });
 
       // Record quota usage
@@ -203,7 +179,6 @@ export const TaskForm: React.FC<TaskFormProps> = ({
       // Reset form
       setFormData({
         citizen_id: defaultCitizenId || '',
-        worker_id: '',
         task_type: 'hunt_collectible',
         priority: PRIORITY.MEDIUM,
       });
@@ -246,27 +221,6 @@ export const TaskForm: React.FC<TaskFormProps> = ({
           </select>
           <small>Select which citizen performs this task</small>
         </div>
-
-        {workers.length > 0 && (
-          <div className="form-group">
-            <label htmlFor="worker_id">Select Worker</label>
-            <select
-              id="worker_id"
-              name="worker_id"
-              value={formData.worker_id || ''}
-              onChange={handleInputChange}
-              required
-            >
-              <option value="">Choose a worker...</option>
-              {workers.map(worker => (
-                <option key={worker.id} value={worker.id}>
-                  {worker.name} - v{worker.version} ({worker.status})
-                </option>
-              ))}
-            </select>
-            <small>Select the worker to execute this task</small>
-          </div>
-        )}
 
         <div className="form-group">
           <label htmlFor="task_type">Task Type</label>
@@ -315,7 +269,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
 
         <button
           type="submit"
-          disabled={isLoading || !formData.citizen_id || !formData.worker_id || isCheckingQuota}
+          disabled={isLoading || !formData.citizen_id || isCheckingQuota}
           className="submit-button"
         >
           {isLoading ? 'Queueing task...' : 'Queue Task'}

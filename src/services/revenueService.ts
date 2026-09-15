@@ -43,8 +43,7 @@ export async function recordRevenue(input: RecordRevenueInput): Promise<Revenue>
 
     const revenueData = {
       citizen_id: input.citizen_id,
-      worker_id: input.worker_id,
-      task_type: input.task_type,
+            task_type: input.task_type,
       amount: input.amount,
       currency: input.currency || 'USD',
       source: input.source || 'task_completion',
@@ -82,8 +81,7 @@ export async function recordRevenuesBatch(inputs: RecordRevenueInput[]): Promise
     const now = new Date();
     const revenueData = inputs.map(input => ({
       citizen_id: input.citizen_id,
-      worker_id: input.worker_id,
-      task_type: input.task_type,
+            task_type: input.task_type,
       amount: input.amount,
       currency: input.currency || 'USD',
       source: input.source || 'task_completion',
@@ -210,32 +208,6 @@ export async function getRevenueByTaskType(taskType: TaskType): Promise<Revenue[
   }
 }
 
-/**
- * Get revenue from a specific worker
- */
-export async function getRevenueByWorker(workerId: string): Promise<Revenue[]> {
-  try {
-    const { data, error } = await supabase
-      .from('revenue')
-      .select('*')
-      .eq('worker_id', workerId)
-      .order('recorded_at', { ascending: false });
-
-    if (error) handleSupabaseError(error, 'getRevenueByWorker');
-
-    return data || [];
-  } catch (error) {
-    handleSupabaseError(error, 'getRevenueByWorker');
-  }
-}
-
-// ============================================================================
-// Revenue Aggregations
-// ============================================================================
-
-/**
- * Get total revenue by citizen
- */
 export async function getRevenueAggregationByCitizen(): Promise<RevenueAggregation[]> {
   try {
     const { data, error } = await supabase
@@ -524,7 +496,6 @@ export async function exportRevenueAsCSV(
       ...revenues.map(r =>
         [
           r.citizen_id,
-          r.worker_id,
           r.task_type,
           r.amount,
           r.currency,
